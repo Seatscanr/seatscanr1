@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import streamlit.components.v1 as components
 
 # 1. Custom Setup with Game Favicon
@@ -32,7 +32,6 @@ st.markdown("""
         white-space: nowrap;
         animation: ticker 35s linear infinite;
     }
-    /* Duplicate content box ensures no empty gaps while looping */
     .ticker-content {
         display: flex;
         flex-shrink: 0;
@@ -44,7 +43,6 @@ st.markdown("""
     .price-up { color: #00ff66; }
     .price-down { color: #FF007A; }
     
-    /* Keyframe that slides content exactly by 50% (the length of one full list) */
     @keyframes ticker {
         0% { transform: translate3d(0, 0, 0); }
         100% { transform: translate3d(-50%, 0, 0); }
@@ -79,20 +77,15 @@ st.markdown("""
         background: linear-gradient(to right, #FFFFFF 0%, #94A3B8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-top: 60px; /* Pushed down a bit more so it clears the fixed ticker */
+        margin-top: 60px;
         margin-bottom: 10px;
     }
     
-    /* Input Styling override to feel like a high-end search bar */
-    div[data-baseweb="input"] {
+    /* Input & Selectbox Styling override */
+    div[data-baseweb="select"], div[data-baseweb="input"] {
         background-color: #0f172a !important;
         border: 1px solid #334155 !important;
-        border-radius: 50px !important;
-        padding-left: 15px !important;
-    }
-    div[data-baseweb="input"]:focus-within {
-        border-color: #00F2FE !important;
-        box-shadow: 0 0 12px rgba(0,242,254,0.2) !important;
+        border-radius: 8px !important;
     }
     
     .hero-sub {
@@ -108,51 +101,81 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 📈 LIVE 2026 MIX STOCK TICKER (Continuous Loop)
-# We list everything twice so that it can infinite-scroll perfectly
+# 3. 📈 LIVE STOCK TICKER
 st.markdown("""
 <div class="ticker-wrap">
     <div class="ticker">
         <div class="ticker-content">
             <span class="ticker-item">🎫 MARKET LIVE</span>
-            <span class="ticker-item">WEEZER (UNITED CENTER): <span class="price-down">$85 (-3.2%)</span></span>
-            <span class="ticker-item">SANTANA (HOLLYWOOD BOWL): <span class="price-up">$120 (+5.4%)</span></span>
+            <span class="ticker-item">WEEZER: <span class="price-down">$85 (-3.2%)</span></span>
+            <span class="ticker-item">SANTANA: <span class="price-up">$120 (+5.4%)</span></span>
             <span class="ticker-item">RUSH REUNION: <span class="price-up">$250 (+15.1%)</span></span>
-            <span class="ticker-item">NY YANKEES VS RED SOX: <span class="price-down">$65 (-1.5%)</span></span>
-            <span class="ticker-item">COACHELLA 2026 PASS: <span class="price-up">$549 (+2.1%)</span></span>
-            <span class="ticker-item">LA LAKERS COURTSIDE: <span class="price-down">$1,100 (-0.8%)</span></span>
+            <span class="ticker-item">NY YANKEES: <span class="price-down">$65 (-1.5%)</span></span>
+            <span class="ticker-item">COACHELLA 2026: <span class="price-up">$549 (+2.1%)</span></span>
+            <span class="ticker-item">LA LAKERS: <span class="price-down">$1,100 (-0.8%)</span></span>
         </div>
         <div class="ticker-content">
             <span class="ticker-item">🎫 MARKET LIVE</span>
-            <span class="ticker-item">WEEZER (UNITED CENTER): <span class="price-down">$85 (-3.2%)</span></span>
-            <span class="ticker-item">SANTANA (HOLLYWOOD BOWL): <span class="price-up">$120 (+5.4%)</span></span>
+            <span class="ticker-item">WEEZER: <span class="price-down">$85 (-3.2%)</span></span>
+            <span class="ticker-item">SANTANA: <span class="price-up">$120 (+5.4%)</span></span>
             <span class="ticker-item">RUSH REUNION: <span class="price-up">$250 (+15.1%)</span></span>
-            <span class="ticker-item">NY YANKEES VS RED SOX: <span class="price-down">$65 (-1.5%)</span></span>
-            <span class="ticker-item">COACHELLA 2026 PASS: <span class="price-up">$549 (+2.1%)</span></span>
-            <span class="ticker-item">LA LAKERS COURTSIDE: <span class="price-down">$1,100 (-0.8%)</span></span>
+            <span class="ticker-item">NY YANKEES: <span class="price-down">$65 (-1.5%)</span></span>
+            <span class="ticker-item">COACHELLA 2026: <span class="price-up">$549 (+2.1%)</span></span>
+            <span class="ticker-item">LA LAKERS: <span class="price-down">$1,100 (-0.8%)</span></span>
         </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# No more logo columns! Straight to the content.
-
 # 4. Centered, Professional Hero Section
 st.markdown('<p class="hero-sub">// Live Ticket Metasearch</p>', unsafe_allow_html=True)
 st.markdown('<h1 class="hero-title">Find the best seats.<br>Compare the market.</h1>', unsafe_allow_html=True)
 
-# 5. Centered search bar
+# 5. Centered Search UI
 left_space, search_box, right_space = st.columns([1, 2, 1])
 
+# TOP 5 POPULAR SUGGESTIONS DROPDOWN (With image emojis as logos!)
+popular_options = [
+    "Type or Select an Event...",
+    "🎤 Taylor Swift",
+    "⚾ New York Yankees",
+    "🏀 Los Angeles Lakers",
+    "🎸 Metallica",
+    "🎭 Hamilton"
+]
+
 with search_box:
-    query = st.text_input("", placeholder="Search for artists, teams, sports or venues...", label_visibility="collapsed")
+    selected_option = st.selectbox("", options=popular_options, label_visibility="collapsed")
+    
+    # Text fallback if they want to type something completely custom
+    custom_query = st.text_input("", placeholder="...or type any other artist, team, or venue here", label_visibility="collapsed")
+
+# Resolve which query to use
+query = ""
+if selected_option != "Type or Select an Event...":
+    # Strip the emoji off the front for clean API searching
+    query = selected_option.split(" ", 1)[1] if " " in selected_option else selected_option
+if custom_query:
+    query = custom_query
 
 st.write("") 
+
+# --- CITY EXPLORER FEATURE ---
+_, explorer_col, _ = st.columns([1, 2, 1])
+with explorer_col:
+    with st.expander("🌍 Explore Your City (Next 14 Days)"):
+        city_input = st.text_input("Enter City Name", placeholder="e.g., Chicago, New York, Los Angeles")
+        if st.button("Find Local Events"):
+            if city_input:
+                query = f"city_mode:{city_input}"
+            else:
+                st.error("Please enter a city name first!")
 
 # API Key Hook
 TM_API_KEY = st.secrets["TM_API_KEY"]
 
 if query:
+    events = []
     # THE RADAR TRIGGER
     with st.empty():
         st.markdown('''
@@ -162,7 +185,17 @@ if query:
             </div>
         ''', unsafe_allow_html=True)
         
-        url = f"https://app.ticketmaster.com/discovery/v2/events.json?apikey={TM_API_KEY}&keyword={query}"
+        # Determine if we are doing a standard query or a city explore
+        if query.startswith("city_mode:"):
+            city = query.split(":")[1]
+            now = datetime.now()
+            two_weeks_later = now + timedelta(days=14)
+            start_date = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+            end_date = two_weeks_later.strftime("%Y-%m-%dT%H:%M:%SZ")
+            url = f"https://app.ticketmaster.com/discovery/v2/events.json?apikey={TM_API_KEY}&city={city}&startDateTime={start_date}&endDateTime={end_date}&sort=date,asc"
+        else:
+            url = f"https://app.ticketmaster.com/discovery/v2/events.json?apikey={TM_API_KEY}&keyword={query}"
+        
         try:
             response = requests.get(url)
             data = response.json()
@@ -176,15 +209,18 @@ if query:
         if '_embedded' in data and 'events' in data['_embedded']:
             events = data['_embedded']['events']
             
-            # Keep the success message looking clean and centered
             _, success_box, _ = st.columns([1, 2, 1])
             with success_box:
-                st.success(f"Results found for: **{query}**")
+                display_name = query.split(":")[1] if query.startswith("city_mode:") else query
+                st.success(f"Discovered {len(events)} matching live dates for **{display_name}**")
             
-            for ev in events[:5]:
+            # REMOVED THE [:5] LIMIT. Now it will loop through dozens of matches!
+            for ev in events[:50]: 
                 name = ev['name']
                 date_str = ev['dates']['start'].get('localDate', 'TBA')
-                venue = ev['_embedded']['venues'][0]['name']
+                venue = "TBA"
+                if '_embedded' in ev and 'venues' in ev['_embedded']:
+                    venue = ev['_embedded']['venues'][0]['name']
                 url_link = ev['url']
                 
                 try:
@@ -192,7 +228,6 @@ if query:
                 except:
                     formatted_date = date_str
 
-                # Clean, component-based row rendering
                 card_html = f'''
                 <!DOCTYPE html>
                 <html>
@@ -203,7 +238,7 @@ if query:
                             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                             color: #f8fafc;
                             margin: 0;
-                            padding: 10px 0;
+                            padding: 5px 0;
                         }}
                         .deal-card {{
                             background-color: #0f172a; 
@@ -240,9 +275,6 @@ if query:
                             font-size: 13px;
                             letter-spacing: 0.5px;
                         }}
-                        .deal-btn:hover {{
-                            opacity: 0.9;
-                        }}
                         .best-deal-price {{
                             font-family: sans-serif;
                             font-weight: 800;
@@ -258,7 +290,7 @@ if query:
                         <div class="deal-card">
                             <div style="display:flex; justify-content:space-between; gap:20px; align-items:center;">
                                 <div style="flex: 2;">
-                                    <span style="background-color:#1e293b; color:#94A3B8; padding:3px 6px; border-radius:3px; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">Confirmed Match</span>
+                                    <span style="background-color:#1e293b; color:#94A3B8; padding:3px 6px; border-radius:3px; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">Confirmed Event</span>
                                     <h2 style="margin:4px 0 2px 0; color:#f8fafc; font-size: 18px;">{name}</h2>
                                     <p style="margin:0; color:#64748b; font-size: 13px;">📅 {formatted_date} &nbsp;|&nbsp; 📍 {venue}</p>
                                 </div>
