@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 # 1. Custom Setup with Game Favicon
 st.set_page_config(page_title="SeatScanr - Metasearch", page_icon="🎫", layout="wide")
 
-# 2. Injecting Custom CSS for Professional UI, Ticker & Alerts
+# 2. Injecting Custom CSS for Professional UI, Infinite Ticker & Alerts
 st.markdown("""
 <style>
     /* Dark Premium Background */
@@ -21,26 +21,33 @@ st.markdown("""
         color: #f8fafc; 
     }
     
-    /* 📈 STOCK TICKER AT THE TOP */
+    /* 📈 INFINITE SEAMLESS STOCK TICKER AT THE TOP */
     .ticker-wrap {
         position: fixed; top: 0; left: 0; width: 100%; overflow: hidden; height: 35px;
         background-color: #0b111e; border-bottom: 1px solid #1e293b; z-index: 9999;
         display: flex; align-items: center;
     }
     .ticker {
-        display: inline-block; height: 35px; line-height: 35px;
-        white-space: nowrap; padding-right: 100%;
-        animation: ticker 25s linear infinite;
+        display: flex;
+        white-space: nowrap;
+        animation: ticker 35s linear infinite;
+    }
+    /* Duplicate content box ensures no empty gaps while looping */
+    .ticker-content {
+        display: flex;
+        flex-shrink: 0;
     }
     .ticker-item {
-        display: inline-block; padding: 0 20px; font-family: monospace; font-size: 12px;
-        font-weight: bold; color: #94A3B8;
+        display: inline-block; padding: 0 25px; font-family: monospace; font-size: 12px;
+        font-weight: bold; color: #94A3B8; line-height: 35px;
     }
     .price-up { color: #00ff66; }
     .price-down { color: #FF007A; }
+    
+    /* Keyframe that slides content exactly by 50% (the length of one full list) */
     @keyframes ticker {
         0% { transform: translate3d(0, 0, 0); }
-        100% { transform: translate3d(-100%, 0, 0); }
+        100% { transform: translate3d(-50%, 0, 0); }
     }
 
     /* RADAR SCANNER LOADER ANIMATION */
@@ -72,7 +79,7 @@ st.markdown("""
         background: linear-gradient(to right, #FFFFFF 0%, #94A3B8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-top: 50px; /* Space for the fixed ticker */
+        margin-top: 60px; /* Pushed down a bit more so it clears the fixed ticker */
         margin-bottom: 10px;
     }
     
@@ -96,26 +103,39 @@ st.markdown("""
         letter-spacing: 2px;
         text-align: center;
         text-transform: uppercase;
-        margin-top: 40px;
+        margin-top: 50px;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 📈 LIVE STOCK TICKER
+# 3. 📈 LIVE 2026 MIX STOCK TICKER (Continuous Loop)
+# We list everything twice so that it can infinite-scroll perfectly
 st.markdown("""
 <div class="ticker-wrap">
     <div class="ticker">
-        <span class="ticker-item">🎫 MARKET LIVE</span>
-        <span class="ticker-item">TAYLOR SWIFT: <span class="price-down">$1,150 (-4.2%)</span></span>
-        <span class="ticker-item">SUPER BOWL LXI: <span class="price-up">$6,400 (+12.1%)</span></span>
-        <span class="ticker-item">NY YANKEES: <span class="price-up">$45 (+1.5%)</span></span>
-        <span class="ticker-item">LA LAKERS: <span class="price-down">$110 (-2.0%)</span></span>
-        <span class="ticker-item">COACHELLA: <span class="price-up">$499 (+0.5%)</span></span>
+        <div class="ticker-content">
+            <span class="ticker-item">🎫 MARKET LIVE</span>
+            <span class="ticker-item">WEEZER (UNITED CENTER): <span class="price-down">$85 (-3.2%)</span></span>
+            <span class="ticker-item">SANTANA (HOLLYWOOD BOWL): <span class="price-up">$120 (+5.4%)</span></span>
+            <span class="ticker-item">RUSH REUNION: <span class="price-up">$250 (+15.1%)</span></span>
+            <span class="ticker-item">NY YANKEES VS RED SOX: <span class="price-down">$65 (-1.5%)</span></span>
+            <span class="ticker-item">COACHELLA 2026 PASS: <span class="price-up">$549 (+2.1%)</span></span>
+            <span class="ticker-item">LA LAKERS COURTSIDE: <span class="price-down">$1,100 (-0.8%)</span></span>
+        </div>
+        <div class="ticker-content">
+            <span class="ticker-item">🎫 MARKET LIVE</span>
+            <span class="ticker-item">WEEZER (UNITED CENTER): <span class="price-down">$85 (-3.2%)</span></span>
+            <span class="ticker-item">SANTANA (HOLLYWOOD BOWL): <span class="price-up">$120 (+5.4%)</span></span>
+            <span class="ticker-item">RUSH REUNION: <span class="price-up">$250 (+15.1%)</span></span>
+            <span class="ticker-item">NY YANKEES VS RED SOX: <span class="price-down">$65 (-1.5%)</span></span>
+            <span class="ticker-item">COACHELLA 2026 PASS: <span class="price-up">$549 (+2.1%)</span></span>
+            <span class="ticker-item">LA LAKERS COURTSIDE: <span class="price-down">$1,100 (-0.8%)</span></span>
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Remove the old header columns entirely as requested!
+# No more logo columns! Straight to the content.
 
 # 4. Centered, Professional Hero Section
 st.markdown('<p class="hero-sub">// Live Ticket Metasearch</p>', unsafe_allow_html=True)
@@ -242,7 +262,6 @@ if query:
                                     <h2 style="margin:4px 0 2px 0; color:#f8fafc; font-size: 18px;">{name}</h2>
                                     <p style="margin:0; color:#64748b; font-size: 13px;">📅 {formatted_date} &nbsp;|&nbsp; 📍 {venue}</p>
                                 </div>
-                                
                                 <div style="flex: 2;">
                                     <div class="provider-tag">
                                         <span style="font-weight:bold;color:#64748b;font-size:12px;">Ticketmaster</span>
@@ -257,7 +276,6 @@ if query:
                                         <span style="color:#00ff66;font-weight:bold;font-size:12px;">From $41</span>
                                     </div>
                                 </div>
-                                
                                 <div style="flex: 1; text-align:center;">
                                     <h4 style="margin:0; color:#64748b; font-size:11px; letter-spacing:0.5px; text-transform:uppercase;">Best Price</h4>
                                     <p class="best-deal-price">$41</p>
@@ -272,7 +290,6 @@ if query:
                 components.html(card_html, height=130)
                 
                 # 🛎️ PRICE MONITORING ALERTS
-                # We put native Streamlit elements below the HTML card
                 _, alert_box, _ = st.columns([1, 2, 1])
                 with alert_box:
                     with st.expander(f"🔔 Create Price Alert for {name}"):
@@ -283,7 +300,7 @@ if query:
                         with col_target:
                             target_price = st.number_input("Target Price ($)", min_value=10, value=40, key=f"price_{ev['id']}")
                         with col_btn:
-                            st.write("") # Spacer to push button down
+                            st.write("") 
                             if st.button("Set Alert", key=f"btn_{ev['id']}"):
                                 if user_email:
                                     st.success(f"Alert Active! Watching for prices below ${target_price} for {name}.")
@@ -292,7 +309,6 @@ if query:
                 st.divider()
                 
         else:
-             # Keep warning centered too
             _, warn_box, _ = st.columns([1, 2, 1])
             with warn_box:
                 st.warning("No matches found across the scanned platforms.")
