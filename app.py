@@ -136,4 +136,15 @@ if query:
                             </div>
                             
                             <div style="flex: 1; text-align:center;">
-                                <h4 style="margin:0; color:#94A3B8; font-size:12px;">BEST DEAL
+                                <h4 style="margin:0; color:#94A3B8; font-size:12px;">BEST DEAL</h4>
+                                <h2 style="margin:0 0 10px 0; color:#00ff66;">$41</h2>
+                                <a href="{url_link}" target="_blank" class="deal-btn">Compare Deals</a>
+                            </div>
+                        </div>
+                    </div>
+                ''', unsafe_allow_html=True)
+        else:
+            st.warning("No matches found across the scanned platforms.")
+            
+    except Exception as e:
+        st.error(f"Interference detected: {e}")
