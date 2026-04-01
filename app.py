@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 # 1. Custom Setup with Game Favicon
 st.set_page_config(page_title="SeatScanr - Metasearch", page_icon="🎫", layout="wide")
 
-# 2. Injecting Custom CSS for Professional UI & Infinite Ticker
+# 2. Injecting Custom CSS for Professional UI, Infinite Ticker & Alerts
 st.markdown("""
 <style>
     /* Dark Premium Background */
@@ -32,6 +32,7 @@ st.markdown("""
         white-space: nowrap;
         animation: ticker 35s linear infinite;
     }
+    /* Duplicate content box ensures no empty gaps while looping */
     .ticker-content {
         display: flex;
         flex-shrink: 0;
@@ -43,6 +44,7 @@ st.markdown("""
     .price-up { color: #00ff66; }
     .price-down { color: #FF007A; }
     
+    /* Keyframe that slides content exactly by 50% (the length of one full list) */
     @keyframes ticker {
         0% { transform: translate3d(0, 0, 0); }
         100% { transform: translate3d(-50%, 0, 0); }
@@ -77,7 +79,7 @@ st.markdown("""
         background: linear-gradient(to right, #FFFFFF 0%, #94A3B8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-top: 60px;
+        margin-top: 60px; /* Pushed down a bit more so it clears the fixed ticker */
         margin-bottom: 10px;
     }
     
@@ -106,37 +108,40 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 📈 INFINITE STOCK TICKER
+# 3. 📈 LIVE 2026 MIX STOCK TICKER (Continuous Loop)
+# We list everything twice so that it can infinite-scroll perfectly
 st.markdown("""
 <div class="ticker-wrap">
     <div class="ticker">
         <div class="ticker-content">
             <span class="ticker-item">🎫 MARKET LIVE</span>
-            <span class="ticker-item">WEEZER: <span class="price-down">$85 (-3.2%)</span></span>
-            <span class="ticker-item">SANTANA: <span class="price-up">$120 (+5.4%)</span></span>
+            <span class="ticker-item">WEEZER (UNITED CENTER): <span class="price-down">$85 (-3.2%)</span></span>
+            <span class="ticker-item">SANTANA (HOLLYWOOD BOWL): <span class="price-up">$120 (+5.4%)</span></span>
             <span class="ticker-item">RUSH REUNION: <span class="price-up">$250 (+15.1%)</span></span>
-            <span class="ticker-item">NY YANKEES: <span class="price-down">$65 (-1.5%)</span></span>
-            <span class="ticker-item">COACHELLA 2026: <span class="price-up">$549 (+2.1%)</span></span>
-            <span class="ticker-item">LA LAKERS: <span class="price-down">$1,100 (-0.8%)</span></span>
+            <span class="ticker-item">NY YANKEES VS RED SOX: <span class="price-down">$65 (-1.5%)</span></span>
+            <span class="ticker-item">COACHELLA 2026 PASS: <span class="price-up">$549 (+2.1%)</span></span>
+            <span class="ticker-item">LA LAKERS COURTSIDE: <span class="price-down">$1,100 (-0.8%)</span></span>
         </div>
         <div class="ticker-content">
             <span class="ticker-item">🎫 MARKET LIVE</span>
-            <span class="ticker-item">WEEZER: <span class="price-down">$85 (-3.2%)</span></span>
-            <span class="ticker-item">SANTANA: <span class="price-up">$120 (+5.4%)</span></span>
+            <span class="ticker-item">WEEZER (UNITED CENTER): <span class="price-down">$85 (-3.2%)</span></span>
+            <span class="ticker-item">SANTANA (HOLLYWOOD BOWL): <span class="price-up">$120 (+5.4%)</span></span>
             <span class="ticker-item">RUSH REUNION: <span class="price-up">$250 (+15.1%)</span></span>
-            <span class="ticker-item">NY YANKEES: <span class="price-down">$65 (-1.5%)</span></span>
-            <span class="ticker-item">COACHELLA 2026: <span class="price-up">$549 (+2.1%)</span></span>
-            <span class="ticker-item">LA LAKERS: <span class="price-down">$1,100 (-0.8%)</span></span>
+            <span class="ticker-item">NY YANKEES VS RED SOX: <span class="price-down">$65 (-1.5%)</span></span>
+            <span class="ticker-item">COACHELLA 2026 PASS: <span class="price-up">$549 (+2.1%)</span></span>
+            <span class="ticker-item">LA LAKERS COURTSIDE: <span class="price-down">$1,100 (-0.8%)</span></span>
         </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
+# No more logo columns! Straight to the content.
+
 # 4. Centered, Professional Hero Section
 st.markdown('<p class="hero-sub">// Live Ticket Metasearch</p>', unsafe_allow_html=True)
 st.markdown('<h1 class="hero-title">Find the best seats.<br>Compare the market.</h1>', unsafe_allow_html=True)
 
-# 5. Centered search bar (Clean & Alone)
+# 5. Centered search bar
 left_space, search_box, right_space = st.columns([1, 2, 1])
 
 with search_box:
@@ -147,25 +152,166 @@ st.write("")
 # API Key Hook
 TM_API_KEY = st.secrets["TM_API_KEY"]
 
-# Function to handle the alert pop-up (Streamlit Modal)
-@st.dialog("🔔 Create Price Alert")
-def set_alert_modal(event_name):
-    st.write(f"We will monitor secondary markets and email you when prices drop for **{event_name}**.")
-    user_email = st.text_input("Your Email address", placeholder="alex@example.com")
-    target_price = st.number_input("Target Price ($)", min_value=10, value=40)
-    
-    if st.button("Confirm Alert", use_container_width=True):
-        if user_email:
-            st.success(f"Alert Active! We are watching for prices below ${target_price}.")
-            time.sleep(1.5)
-            st.rerun()
-        else:
-            st.error("Please enter a valid email.")
-
 if query:
     # THE RADAR TRIGGER
     with st.empty():
         st.markdown('''
             <div class="radar-container">
                 <div class="radar"></div>
-                <p style="color:#00F2FE; font-weight:bold; margin-top:15px; font-family:monospace; letter-spacing
+                <p style="color:#00F2FE; font-weight:bold; margin-top:15px; font-family:monospace; letter-spacing:1px;">SCANNING THE MARKET...</p>
+            </div>
+        ''', unsafe_allow_html=True)
+        
+        url = f"https://app.ticketmaster.com/discovery/v2/events.json?apikey={TM_API_KEY}&keyword={query}"
+        try:
+            response = requests.get(url)
+            data = response.json()
+            time.sleep(1.2)
+            st.write("") 
+        except:
+            st.write("")
+
+    # 6. Render the Results
+    try:
+        if '_embedded' in data and 'events' in data['_embedded']:
+            events = data['_embedded']['events']
+            
+            # Keep the success message looking clean and centered
+            _, success_box, _ = st.columns([1, 2, 1])
+            with success_box:
+                st.success(f"Results found for: **{query}**")
+            
+            for ev in events[:5]:
+                name = ev['name']
+                date_str = ev['dates']['start'].get('localDate', 'TBA')
+                venue = ev['_embedded']['venues'][0]['name']
+                url_link = ev['url']
+                
+                try:
+                    formatted_date = datetime.strptime(date_str, "%Y-%m-%d").strftime("%b %d, %Y")
+                except:
+                    formatted_date = date_str
+
+                # Clean, component-based row rendering
+                card_html = f'''
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {{
+                            background: transparent;
+                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                            color: #f8fafc;
+                            margin: 0;
+                            padding: 10px 0;
+                        }}
+                        .deal-card {{
+                            background-color: #0f172a; 
+                            border: 1px solid #1e293b; 
+                            border-radius: 8px;
+                            padding: 18px; 
+                            margin-bottom: 5px; 
+                            transition: 0.2s ease;
+                        }}
+                        .deal-card:hover {{ 
+                            border-color: #334155; 
+                            background-color: #1e293b;
+                        }}
+                        .provider-tag {{
+                            background-color: #0b111e; 
+                            border-radius: 4px; 
+                            padding: 8px 12px;
+                            display: flex; 
+                            justify-content: space-between; 
+                            align-items: center;
+                            margin-bottom: 6px; 
+                            border: 1px solid #1e293b;
+                        }}
+                        .deal-btn {{
+                            background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 100%);
+                            color: #060913 !important; 
+                            text-align: center; 
+                            padding: 12px;
+                            border-radius: 4px; 
+                            font-weight: 700; 
+                            display: block;
+                            text-decoration: none; 
+                            text-transform: uppercase;
+                            font-size: 13px;
+                            letter-spacing: 0.5px;
+                        }}
+                        .deal-btn:hover {{
+                            opacity: 0.9;
+                        }}
+                        .best-deal-price {{
+                            font-family: sans-serif;
+                            font-weight: 800;
+                            font-size: 32px;
+                            color: #00ff66;
+                            margin: 0;
+                            line-height: 1;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div style="width: 80%; margin: 0 auto;">
+                        <div class="deal-card">
+                            <div style="display:flex; justify-content:space-between; gap:20px; align-items:center;">
+                                <div style="flex: 2;">
+                                    <span style="background-color:#1e293b; color:#94A3B8; padding:3px 6px; border-radius:3px; font-size:10px; font-weight:bold; letter-spacing:1px; text-transform:uppercase;">Confirmed Match</span>
+                                    <h2 style="margin:4px 0 2px 0; color:#f8fafc; font-size: 18px;">{name}</h2>
+                                    <p style="margin:0; color:#64748b; font-size: 13px;">📅 {formatted_date} &nbsp;|&nbsp; 📍 {venue}</p>
+                                </div>
+                                <div style="flex: 2;">
+                                    <div class="provider-tag">
+                                        <span style="font-weight:bold;color:#64748b;font-size:12px;">Ticketmaster</span>
+                                        <span style="color:#f8fafc;font-weight:bold;font-size:12px;">From $45</span>
+                                    </div>
+                                    <div class="provider-tag">
+                                        <span style="font-weight:bold;color:#64748b;font-size:12px;">StubHub</span>
+                                        <span style="color:#f8fafc;font-weight:bold;font-size:12px;">From $62</span>
+                                    </div>
+                                    <div class="provider-tag">
+                                        <span style="font-weight:bold;color:#64748b;font-size:12px;">SeatGeek</span>
+                                        <span style="color:#00ff66;font-weight:bold;font-size:12px;">From $41</span>
+                                    </div>
+                                </div>
+                                <div style="flex: 1; text-align:center;">
+                                    <h4 style="margin:0; color:#64748b; font-size:11px; letter-spacing:0.5px; text-transform:uppercase;">Best Price</h4>
+                                    <p class="best-deal-price">$41</p>
+                                    <a href="{url_link}" target="_blank" class="deal-btn">Get Tickets</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                '''
+                components.html(card_html, height=130)
+                
+                # 🛎️ PRICE MONITORING ALERTS
+                _, alert_box, _ = st.columns([1, 2, 1])
+                with alert_box:
+                    with st.expander(f"🔔 Create Price Alert for {name}"):
+                        st.write("We will monitor secondary markets and email you when prices drop below your target.")
+                        col_email, col_target, col_btn = st.columns([2, 1, 1])
+                        with col_email:
+                            user_email = st.text_input("Your Email", key=f"email_{ev['id']}")
+                        with col_target:
+                            target_price = st.number_input("Target Price ($)", min_value=10, value=40, key=f"price_{ev['id']}")
+                        with col_btn:
+                            st.write("") 
+                            if st.button("Set Alert", key=f"btn_{ev['id']}"):
+                                if user_email:
+                                    st.success(f"Alert Active! Watching for prices below ${target_price} for {name}.")
+                                else:
+                                    st.error("Please enter an email address.")
+                st.divider()
+                
+        else:
+            _, warn_box, _ = st.columns([1, 2, 1])
+            with warn_box:
+                st.warning("No matches found across the scanned platforms.")
+            
+    except Exception as e:
+        st.error(f"Interference detected: {e}")
