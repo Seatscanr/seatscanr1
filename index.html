@@ -1,14 +1,81 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Seatscanr</title>
-    <style type="text/css">
-        html { overflow: auto; }
-        html, body, div, iframe { margin: 0px; padding: 0px; height: 100%; border: none; }
-        iframe { display: block; width: 100%; border: none; overflow-y: auto; overflow-x: hidden; }
-    </style>
-</head>
-<body>
-    <iframe src="https://turbo-space-spoon-g4gv55qrrqjrfw9wq-8501.app.github.dev/?embed=true"></iframe>
-</body>
-</html>
+import streamlit as st
+import requests
+
+# 1. Page Configuration (Full screen width)
+st.set_page_config(
+    page_title="Seatscanr | US Event Finder",
+    page_icon="🎫",
+    layout="wide"
+)
+
+# 🔑 Paste your real Ticketmaster Consumer Key here!
+TM_API_KEY = 'YOUR_CONSUMER_KEY_HERE'
+
+# 2. Hero Header
+st.markdown("# 🎫 Seatscanr: Live US Event Search")
+st.write("Search for any concert, sports team, or show across the United States.")
+
+# 3. Search Bar
+search_query = st.text_input("🔍 What event or artist are you looking for?", placeholder="e.g., Taylor Swift, Lakers, Broadway, Chicago")
+
+# 4. Fetch Live Data from Ticketmaster
+if search_query:
+    with st.spinner(f"Searching for '{search_query}'..."):
+        # This matches the endpoint shown in your documentation!
+        url = "https://app.ticketmaster.com/discovery/v2/events.json"
+        params = {
+            'apikey': TM_API_KEY,
+            'keyword': search_query,
+            'countryCode': 'US',
+            'size': 12  # We pull up to 12 results at a time
+        }
+        
+        try:
+            response = requests.get(url, params=params)
+            data = response.json()
+            
+            # Extract the events from Ticketmaster's data structure
+            events = data.get('_embedded', {}).get('events', [])
+            
+            if not events:
+                st.warning("😅 No live events found matching that name in the US! Try searching for a major artist or team.")
+            else:
+                st.success(f"Found {len(events)} live events!")
+                
+                # 5. Display the real results in a beautiful 3-column grid
+                cols = st.columns(3)
+                
+                for index, event in enumerate(events):
+                    with cols[index % 3]:
+                        # Wrap each card in a clean visual border container
+                        with st.container(border=True):
+                            title = event.get('name', 'Unknown Event')
+                            
+                            # Grab venue and city from the embedded data
+                            venues = event.get('_embedded', {}).get('venues', [{}])
+                            venue_name = venues[0].get('name', 'Unknown Venue')
+                            city = venues[0].get('city', {}).get('name', 'USA')
+                            state = venues[0].get('state', {}).get('stateCode', '')
+                            
+                            # Format the date
+                            date = event.get('dates', {}).get('start', {}).get('localDate', 'TBA')
+                            
+                            # Grab ticket link
+                            ticket_url = event.get('url', '#')
+                            
+                            # Grab price if available
+                            price_ranges = event.get('priceRanges', [{}])
+                            min_price = price_ranges[0].get('min')
+                            price_display = f"${min_price}" if min_price else "Check Site"
+                            
+                            # Build the card layout
+                            st.markdown(f"#### {title}")
+                            st.caption(f"📍 {venue_name} • {city}, {state} | 📅 {date}")
+                            st.markdown(f"### 🎫 Starting at {price_display}")
+                            st.markdown(f"[🔗 Buy Tickets on Ticketmaster]({ticket_url})")
+                            
+        except Exception as e:
+            st.error("Oops! Something went wrong fetching data. Double-check your API key!")
+
+else:
+    st.info("👈 Type an artist, team, or city in the search bar above to begin!")
