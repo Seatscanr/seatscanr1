@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 # 1. Custom Setup with Game Favicon
 st.set_page_config(page_title="SeatScanr - Metasearch", page_icon="🎫", layout="wide")
 
-# 2. Injecting Custom CSS for Professional UI & Subtle Neon
+# 2. Injecting Custom CSS for Professional UI, Ticker & Alerts
 st.markdown("""
 <style>
     /* Dark Premium Background */
@@ -21,6 +21,28 @@ st.markdown("""
         color: #f8fafc; 
     }
     
+    /* 📈 STOCK TICKER AT THE TOP */
+    .ticker-wrap {
+        position: fixed; top: 0; left: 0; width: 100%; overflow: hidden; height: 35px;
+        background-color: #0b111e; border-bottom: 1px solid #1e293b; z-index: 9999;
+        display: flex; align-items: center;
+    }
+    .ticker {
+        display: inline-block; height: 35px; line-height: 35px;
+        white-space: nowrap; padding-right: 100%;
+        animation: ticker 25s linear infinite;
+    }
+    .ticker-item {
+        display: inline-block; padding: 0 20px; font-family: monospace; font-size: 12px;
+        font-weight: bold; color: #94A3B8;
+    }
+    .price-up { color: #00ff66; }
+    .price-down { color: #FF007A; }
+    @keyframes ticker {
+        0% { transform: translate3d(0, 0, 0); }
+        100% { transform: translate3d(-100%, 0, 0); }
+    }
+
     /* RADAR SCANNER LOADER ANIMATION */
     .radar-container {
         display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 30px 0;
@@ -50,6 +72,7 @@ st.markdown("""
         background: linear-gradient(to right, #FFFFFF 0%, #94A3B8 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        margin-top: 50px; /* Space for the fixed ticker */
         margin-bottom: 10px;
     }
     
@@ -57,7 +80,7 @@ st.markdown("""
     div[data-baseweb="input"] {
         background-color: #0f172a !important;
         border: 1px solid #334155 !important;
-        border-radius: 50px !important; /* Rounded pill shape for search bar */
+        border-radius: 50px !important;
         padding-left: 15px !important;
     }
     div[data-baseweb="input"]:focus-within {
@@ -73,35 +96,38 @@ st.markdown("""
         letter-spacing: 2px;
         text-align: center;
         text-transform: uppercase;
+        margin-top: 40px;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Clean Professional Nav Bar
-col_logo, col_txt = st.columns([1, 5])
-with col_logo:
-    try:
-        st.image("logo.png", width=60)
-    except:
-        st.markdown("<h1 style='font-size: 40px; margin: 0;'>🎫</h1>", unsafe_allow_html=True)
+# 3. 📈 LIVE STOCK TICKER
+st.markdown("""
+<div class="ticker-wrap">
+    <div class="ticker">
+        <span class="ticker-item">🎫 MARKET LIVE</span>
+        <span class="ticker-item">TAYLOR SWIFT: <span class="price-down">$1,150 (-4.2%)</span></span>
+        <span class="ticker-item">SUPER BOWL LXI: <span class="price-up">$6,400 (+12.1%)</span></span>
+        <span class="ticker-item">NY YANKEES: <span class="price-up">$45 (+1.5%)</span></span>
+        <span class="ticker-item">LA LAKERS: <span class="price-down">$110 (-2.0%)</span></span>
+        <span class="ticker-item">COACHELLA: <span class="price-up">$499 (+0.5%)</span></span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-with col_txt:
-    st.markdown("<h3 style='color:#f8fafc; margin: 10px 0 0 0; font-family:sans-serif;'>SeatScanr</h3>", unsafe_allow_html=True)
-
-st.divider()
+# Remove the old header columns entirely as requested!
 
 # 4. Centered, Professional Hero Section
 st.markdown('<p class="hero-sub">// Live Ticket Metasearch</p>', unsafe_allow_html=True)
 st.markdown('<h1 class="hero-title">Find the best seats.<br>Compare the market.</h1>', unsafe_allow_html=True)
 
-# 5. 🛠️ THE FIX: Centered search bar that doesn't stretch across the screen
-# This creates 3 columns. The middle column [2] is the only one with content!
+# 5. Centered search bar
 left_space, search_box, right_space = st.columns([1, 2, 1])
 
 with search_box:
     query = st.text_input("", placeholder="Search for artists, teams, sports or venues...", label_visibility="collapsed")
 
-st.write("") # Spacer
+st.write("") 
 
 # API Key Hook
 TM_API_KEY = st.secrets["TM_API_KEY"]
@@ -164,7 +190,7 @@ if query:
                             border: 1px solid #1e293b; 
                             border-radius: 8px;
                             padding: 18px; 
-                            margin-bottom: 12px; 
+                            margin-bottom: 5px; 
                             transition: 0.2s ease;
                         }}
                         .deal-card:hover {{ 
@@ -243,7 +269,27 @@ if query:
                 </body>
                 </html>
                 '''
-                components.html(card_html, height=140)
+                components.html(card_html, height=130)
+                
+                # 🛎️ PRICE MONITORING ALERTS
+                # We put native Streamlit elements below the HTML card
+                _, alert_box, _ = st.columns([1, 2, 1])
+                with alert_box:
+                    with st.expander(f"🔔 Create Price Alert for {name}"):
+                        st.write("We will monitor secondary markets and email you when prices drop below your target.")
+                        col_email, col_target, col_btn = st.columns([2, 1, 1])
+                        with col_email:
+                            user_email = st.text_input("Your Email", key=f"email_{ev['id']}")
+                        with col_target:
+                            target_price = st.number_input("Target Price ($)", min_value=10, value=40, key=f"price_{ev['id']}")
+                        with col_btn:
+                            st.write("") # Spacer to push button down
+                            if st.button("Set Alert", key=f"btn_{ev['id']}"):
+                                if user_email:
+                                    st.success(f"Alert Active! Watching for prices below ${target_price} for {name}.")
+                                else:
+                                    st.error("Please enter an email address.")
+                st.divider()
                 
         else:
              # Keep warning centered too
