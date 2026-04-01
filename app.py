@@ -3,6 +3,7 @@ import requests
 import pandas as pd
 import time
 from datetime import datetime
+import streamlit.components.v1 as components  # <-- Added the heavy hitter!
 
 # 1. Custom Setup with Fun Favicon
 st.set_page_config(page_title="SeatScanr - Metasearch", page_icon="🎫", layout="wide")
@@ -29,28 +30,6 @@ st.markdown("""
         transform-origin: top left; animation: spin 2s linear infinite;
     }
     @keyframes spin { 100% { transform: rotate(360deg); } }
-
-    /* Kayak-Style Comparison Card */
-    .deal-card {
-        background-color: #111827; border: 1px solid #1f2937; border-radius: 12px;
-        padding: 20px; margin-bottom: 25px; transition: 0.3s;
-    }
-    .deal-card:hover { border-color: #00F2FE; }
-
-    /* Provider Deal Tags */
-    .provider-tag {
-        background-color: #1e293b; border-radius: 6px; padding: 10px 15px;
-        display: flex; justify-content: space-between; align-items: center;
-        margin-bottom: 8px; border: 1px solid #334155;
-    }
-    
-    /* Best Deal Button */
-    .deal-btn {
-        background: linear-gradient(135deg, #FF5E62 0%, #FF9966 100%);
-        color: white !important; text-align: center; padding: 12px;
-        border-radius: 8px; font-weight: bold; display: block;
-        text-decoration: none; box-shadow: 0 4px 10px rgba(255,94,98,0.3);
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -110,8 +89,52 @@ if query:
                 except:
                     formatted_date = date_str
 
-                # Kayak Aggregator Layout
-                st.markdown(f'''
+                # NEW BULLETPROOF HTML RENDERER
+                card_html = f'''
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {{
+                            background-color: #0b0f19;
+                            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                            color: #f8fafc;
+                            margin: 0;
+                            padding: 10px;
+                        }}
+                        .deal-card {{
+                            background-color: #111827; 
+                            border: 1px solid #1f2937; 
+                            border-radius: 12px;
+                            padding: 20px; 
+                            margin-bottom: 25px; 
+                            transition: 0.3s;
+                        }}
+                        .deal-card:hover {{ border-color: #00F2FE; }}
+                        .provider-tag {{
+                            background-color: #1e293b; 
+                            border-radius: 6px; 
+                            padding: 10px 15px;
+                            display: flex; 
+                            justify-content: space-between; 
+                            align-items: center;
+                            margin-bottom: 8px; 
+                            border: 1px solid #334155;
+                        }}
+                        .deal-btn {{
+                            background: linear-gradient(135deg, #FF5E62 0%, #FF9966 100%);
+                            color: white !important; 
+                            text-align: center; 
+                            padding: 12px;
+                            border-radius: 8px; 
+                            font-weight: bold; 
+                            display: block;
+                            text-decoration: none; 
+                            box-shadow: 0 4px 10px rgba(255,94,98,0.3);
+                        }}
+                    </style>
+                </head>
+                <body>
                     <div class="deal-card">
                         <div style="display:flex; justify-content:space-between; gap:20px; align-items:flex-start;">
                             <div style="flex: 2;">
@@ -142,7 +165,12 @@ if query:
                             </div>
                         </div>
                     </div>
-                ''', unsafe_allow_html=True)
+                </body>
+                </html>
+                '''
+                # Force Streamlit to render it as a true sandbox webpage
+                components.html(card_html, height=180)
+                
         else:
             st.warning("No matches found across the scanned platforms.")
             
